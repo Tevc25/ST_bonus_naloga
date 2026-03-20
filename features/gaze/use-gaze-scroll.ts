@@ -1,20 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import type { RefObject } from "react";
 
 import type { GazePoint } from "@/types/gaze";
 
-// Top 12% and bottom 18% of viewport trigger scroll
-const TOP_ZONE_RATIO = 0.12;
-const BOTTOM_ZONE_RATIO = 0.82;
-const MIN_SPEED_PX = 3;
-const MAX_SPEED_PX = 16;
-// User must dwell in zone for this long before scroll begins
-const DWELL_BEFORE_SCROLL_MS = 600;
+const SCROLL_SPEED_PX = 12;
+// User must dwell on button for this long before scroll begins
+const DWELL_BEFORE_SCROLL_MS = 400;
+// Expands effective hit area to compensate for gaze tracking inaccuracy
+const HIT_MARGIN_PX = 60;
 
 interface UseGazeScrollOptions {
   enabled: boolean;
   paused?: boolean;
+  upRef: RefObject<HTMLElement | null>;
+  downRef: RefObject<HTMLElement | null>;
 }
 
 interface UseGazeScrollResult {
@@ -22,9 +23,26 @@ interface UseGazeScrollResult {
   scrollZone: "up" | "down" | null;
 }
 
+function isGazeOverElement(
+  point: GazePoint,
+  ref: RefObject<HTMLElement | null>
+): boolean {
+  const el = ref.current;
+  if (!el) return false;
+  const rect = el.getBoundingClientRect();
+  return (
+    point.x >= rect.left - HIT_MARGIN_PX &&
+    point.x <= rect.right + HIT_MARGIN_PX &&
+    point.y >= rect.top - HIT_MARGIN_PX &&
+    point.y <= rect.bottom + HIT_MARGIN_PX
+  );
+}
+
 export function useGazeScroll({
   enabled,
-  paused = false
+  paused = false,
+  upRef,
+  downRef
 }: UseGazeScrollOptions): UseGazeScrollResult {
   const rafRef = useRef<number | null>(null);
   const directionRef = useRef<{ dir: "up" | "down"; speed: number } | null>(
@@ -35,7 +53,7 @@ export function useGazeScroll({
     since: number;
   } | null>(null);
   const scrollZoneRef = useRef<"up" | "down" | null>(null);
-  // We use a ref so processGazePoint closure always reads latest values
+  const [scrollZone, setScrollZone] = useState<"up" | "down" | null>(null);
   const enabledRef = useRef(enabled);
   const pausedRef = useRef(paused);
 
@@ -47,14 +65,21 @@ export function useGazeScroll({
     pausedRef.current = paused;
   }, [paused]);
 
+  const setZone = useCallback((zone: "up" | "down" | null) => {
+    if (scrollZoneRef.current !== zone) {
+      scrollZoneRef.current = zone;
+      setScrollZone(zone);
+    }
+  }, []);
+
   const stopScroll = useCallback(() => {
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
     directionRef.current = null;
-    scrollZoneRef.current = null;
-  }, []);
+    setZone(null);
+  }, [setZone]);
 
   useEffect(() => {
     if (!enabled || paused) stopScroll();
@@ -66,17 +91,18 @@ export function useGazeScroll({
 
   const processGazePoint = useCallback(
     (point: GazePoint) => {
-      if (!enabledRef.current || pausedRef.current || typeof window === "undefined") {
+      if (
+        !enabledRef.current ||
+        pausedRef.current ||
+        typeof window === "undefined"
+      ) {
         stopScroll();
         return;
       }
 
-      const vh = window.innerHeight;
-      const ny = point.y / vh;
-
       let zone: "up" | "down" | null = null;
-      if (ny < TOP_ZONE_RATIO) zone = "up";
-      else if (ny > BOTTOM_ZONE_RATIO) zone = "down";
+      if (isGazeOverElement(point, upRef)) zone = "up";
+      else if (isGazeOverElement(point, downRef)) zone = "down";
 
       if (!zone) {
         zoneEntryRef.current = null;
@@ -95,24 +121,14 @@ export function useGazeScroll({
       const dwellMs = now - zoneEntryRef.current.since;
       if (dwellMs < DWELL_BEFORE_SCROLL_MS) return;
 
-      // Speed proportional to how deep into the zone the gaze is
-      const depth =
-        zone === "up"
-          ? 1 - ny / TOP_ZONE_RATIO
-          : (ny - BOTTOM_ZONE_RATIO) / (1 - BOTTOM_ZONE_RATIO);
-      const speed =
-        MIN_SPEED_PX + Math.min(depth, 1) * (MAX_SPEED_PX - MIN_SPEED_PX);
-
-      // If already scrolling in the same direction, just update speed
       if (directionRef.current?.dir === zone) {
-        directionRef.current.speed = speed;
-        scrollZoneRef.current = zone;
+        setZone(zone);
         return;
       }
 
       stopScroll();
-      directionRef.current = { dir: zone, speed };
-      scrollZoneRef.current = zone;
+      directionRef.current = { dir: zone, speed: SCROLL_SPEED_PX };
+      setZone(zone);
 
       function tick() {
         const active = directionRef.current;
@@ -125,8 +141,18 @@ export function useGazeScroll({
       }
       rafRef.current = requestAnimationFrame(tick);
     },
-    [stopScroll]
+    [stopScroll, upRef, downRef, setZone]
   );
 
-  return { processGazePoint, scrollZone: scrollZoneRef.current };
+  // Mirror mouse position as gaze fallback (webgazer often follows mouse cursor)
+  useEffect(() => {
+    if (!enabled || paused) return;
+    const onMouseMove = (e: MouseEvent) => {
+      processGazePoint({ x: e.clientX, y: e.clientY, timestamp: Date.now() });
+    };
+    window.addEventListener("mousemove", onMouseMove);
+    return () => window.removeEventListener("mousemove", onMouseMove);
+  }, [enabled, paused, processGazePoint]);
+
+  return { processGazePoint, scrollZone };
 }

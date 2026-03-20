@@ -90,29 +90,6 @@ export function LessonReader({
 
   return (
     <div className="space-y-6 py-6 sm:py-8" data-testid="lesson-reader">
-      {/* Gaze scroll zone indicators */}
-      {gazeScrollZone === "up" && (
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-center bg-gradient-to-b from-primary/20 to-transparent py-3 animate-in fade-in duration-200"
-        >
-          <span className="flex items-center gap-1.5 rounded-full bg-primary/90 px-3 py-1 text-xs font-semibold text-primary-foreground shadow">
-            <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
-            Scrolling up
-          </span>
-        </div>
-      )}
-      {gazeScrollZone === "down" && (
-        <div
-          aria-hidden="true"
-          className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex items-center justify-center bg-gradient-to-t from-primary/20 to-transparent py-3 animate-in fade-in duration-200"
-        >
-          <span className="flex items-center gap-1.5 rounded-full bg-primary/90 px-3 py-1 text-xs font-semibold text-primary-foreground shadow">
-            <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
-            Scrolling down
-          </span>
-        </div>
-      )}
 
       {/* Word dwell popup */}
       {dwelledWord && onDismissWordPopup && (

@@ -41,6 +41,8 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const activeSectionRef = useRef<string | null>(null);
   const autoFocusAppliedRef = useRef(false);
+  const scrollUpRef = useRef<HTMLButtonElement>(null);
+  const scrollDownRef = useRef<HTMLButtonElement>(null);
 
   const [step, setStep] = useState<LessonStep>("calibration");
   const [hints, setHints] = useState<AdaptiveHint[]>([]);
@@ -53,7 +55,9 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
 
   const { processGazePoint: processGazeScroll, scrollZone } = useGazeScroll({
     enabled: step === "reader",
-    paused: dwelledWord !== null
+    paused: dwelledWord !== null,
+    upRef: scrollUpRef,
+    downRef: scrollDownRef
   });
 
   const {
@@ -408,19 +412,82 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
   }
 
   return (
-    <LessonReader
-      lesson={lesson}
-      activeSectionId={activeSectionId}
-      sectionStats={sections}
-      focusModeEnabled={focusModeEnabled}
-      onFocusModeChange={setFocusMode}
-      onFinishLesson={handleFinishReading}
-      registerSectionRef={registerSectionRef}
-      hints={hints}
-      onDismissHint={handleDismissHint}
-      gazeScrollZone={scrollZone}
-      dwelledWord={dwelledWord}
-      onDismissWordPopup={dismissWordPopup}
-    />
+    <>
+      {/* Gor — full-width bar just below the progress bar (nav=64px + progress~44px) */}
+      <button
+        ref={scrollUpRef}
+        aria-label="Scroll up"
+        style={{
+          position: "fixed",
+          top: "108px",
+          left: 0,
+          right: 0,
+          width: "100%",
+          height: "15vh",
+          zIndex: 9999,
+          pointerEvents: "none",
+          cursor: "default",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+          background: scrollZone === "up" ? "rgba(29,78,216,0.18)" : "rgba(239,246,255,0.85)",
+          borderTop: "none",
+          borderLeft: "none",
+          borderRight: "none",
+          borderBottom: scrollZone === "up" ? "3px solid #1d4ed8" : "3px solid #93c5fd",
+          backdropFilter: "blur(4px)",
+          transition: "all 0.15s"
+        }}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={scrollZone === "up" ? "#1d4ed8" : "#60a5fa"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+        <span style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: scrollZone === "up" ? "#1d4ed8" : "#60a5fa" }}>Gor</span>
+      </button>
+
+      {/* Dol — full-width bar at the very bottom */}
+      <button
+        ref={scrollDownRef}
+        aria-label="Scroll down"
+        style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          width: "100%",
+          height: "15vh",
+          zIndex: 9999,
+          pointerEvents: "none",
+          cursor: "default",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+          background: scrollZone === "down" ? "rgba(29,78,216,0.18)" : "rgba(239,246,255,0.85)",
+          borderBottom: "none",
+          borderLeft: "none",
+          borderRight: "none",
+          borderTop: scrollZone === "down" ? "3px solid #1d4ed8" : "3px solid #93c5fd",
+          backdropFilter: "blur(4px)",
+          transition: "all 0.15s"
+        }}
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={scrollZone === "down" ? "#1d4ed8" : "#60a5fa"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        <span style={{ fontSize: "12px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: scrollZone === "down" ? "#1d4ed8" : "#60a5fa" }}>Dol</span>
+      </button>
+<LessonReader
+        lesson={lesson}
+        activeSectionId={activeSectionId}
+        sectionStats={sections}
+        focusModeEnabled={focusModeEnabled}
+        onFocusModeChange={setFocusMode}
+        onFinishLesson={handleFinishReading}
+        registerSectionRef={registerSectionRef}
+        hints={hints}
+        onDismissHint={handleDismissHint}
+        gazeScrollZone={scrollZone}
+        dwelledWord={dwelledWord}
+        onDismissWordPopup={dismissWordPopup}
+      />
+    </>
   );
 }

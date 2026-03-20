@@ -24,8 +24,75 @@ interface UseGazeTrackingResult {
   errorMessage: string | null;
   canTrack: boolean;
   isTracking: boolean;
-  startTracking: () => Promise<boolean>;
+  startTracking: () => Promise<GazeTrackingStatus>;
   stopTracking: () => Promise<void>;
+}
+
+function classifyTrackingError(error: unknown): {
+  status: GazeTrackingStatus;
+  message: string;
+} {
+  if (error instanceof DOMException) {
+    if (error.name === "NotAllowedError") {
+      return {
+        status: "denied",
+        message: "Camera access denied. Continue in fallback mode."
+      };
+    }
+
+    if (error.name === "NotFoundError") {
+      return {
+        status: "unsupported",
+        message:
+          "No camera device was found. Continue in fallback mode or connect a camera."
+      };
+    }
+
+    if (error.name === "NotReadableError") {
+      return {
+        status: "error",
+        message:
+          "Camera is currently unavailable (possibly used by another app/tab)."
+      };
+    }
+
+    if (error.name === "SecurityError") {
+      return {
+        status: "unsupported",
+        message: "Eye tracking requires a secure context (HTTPS or localhost)."
+      };
+    }
+
+    if (error.name === "AbortError") {
+      return {
+        status: "error",
+        message: "Camera initialization was interrupted. Try again."
+      };
+    }
+  }
+
+  if (error instanceof Error) {
+    if (error.message.includes("Failed to load WebGazer")) {
+      return {
+        status: "error",
+        message:
+          "Eye-tracking library could not be loaded. Check network/ad-block settings."
+      };
+    }
+
+    if (error.message.includes("window.webgazer")) {
+      return {
+        status: "error",
+        message:
+          "Eye-tracking library loaded incorrectly in this browser session."
+      };
+    }
+  }
+
+  return {
+    status: "error",
+    message: "Unable to start eye tracking in this environment."
+  };
 }
 
 export function useGazeTracking({
@@ -53,9 +120,19 @@ export function useGazeTracking({
     };
   }, []);
 
-  const startTracking = useCallback(async () => {
+  const startTracking = useCallback(async (): Promise<GazeTrackingStatus> => {
     if (typeof window === "undefined") {
-      return false;
+      return "error";
+    }
+
+    if (!window.isSecureContext) {
+      if (mountedRef.current) {
+        setStatus("unsupported");
+        setErrorMessage(
+          "Eye tracking requires HTTPS or localhost. Open the app in a secure context."
+        );
+      }
+      return "unsupported";
     }
 
     const hasMediaSupport =
@@ -70,7 +147,7 @@ export function useGazeTracking({
           "This browser does not support camera-based eye tracking."
         );
       }
-      return false;
+      return "unsupported";
     }
 
     setStatus("loading");
@@ -91,6 +168,15 @@ export function useGazeTracking({
       }
 
       const webgazer = window.webgazer;
+      const webgazerWithParams = webgazer as typeof webgazer & {
+        params?: {
+          faceMeshSolutionPath?: string;
+        };
+      };
+
+      if (webgazerWithParams.params) {
+        webgazerWithParams.params.faceMeshSolutionPath = "/mediapipe/face_mesh";
+      }
 
       webgazer
         .setRegression("ridge")
@@ -125,18 +211,15 @@ export function useGazeTracking({
       if (mountedRef.current) {
         setStatus("tracking");
       }
-      return true;
+      return "tracking";
     } catch (error) {
       if (mountedRef.current) {
-        if (error instanceof DOMException && error.name === "NotAllowedError") {
-          setStatus("denied");
-          setErrorMessage("Camera access denied. Continue in fallback mode.");
-        } else {
-          setStatus("error");
-          setErrorMessage("Unable to start eye tracking in this environment.");
-        }
+        const classified = classifyTrackingError(error);
+        setStatus(classified.status);
+        setErrorMessage(classified.message);
+        return classified.status;
       }
-      return false;
+      return "error";
     }
   }, []);
 

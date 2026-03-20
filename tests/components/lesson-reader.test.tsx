@@ -59,7 +59,16 @@ describe("LessonReader", () => {
         onFocusModeChange={onToggle}
         onFinishLesson={vi.fn()}
         registerSectionRef={() => vi.fn()}
-        sidebarContent={<div>Hints panel</div>}
+        hints={[
+          {
+            id: "hint-1",
+            kind: "stuck",
+            sectionId: "sec-1",
+            title: "Need help?",
+            message: "Inline support"
+          }
+        ]}
+        onDismissHint={vi.fn()}
       />
     );
 
@@ -71,5 +80,6 @@ describe("LessonReader", () => {
     await user.click(screen.getByRole("switch"));
 
     expect(onToggle).toHaveBeenCalledWith(true);
+    expect(screen.getByText("Need help?")).toBeInTheDocument();
   });
 });

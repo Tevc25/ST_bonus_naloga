@@ -3,10 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import {
-  AdaptiveHintStack,
-  type AdaptiveHint
-} from "@/features/lesson/adaptive-hint-stack";
+import type { AdaptiveHint } from "@/features/lesson/adaptive-hint-stack";
 import { CalibrationFlow } from "@/features/lesson/calibration-flow";
 import { LessonReader } from "@/features/lesson/lesson-reader";
 import { AttentionAnalyzer } from "@/features/gaze/attention-analyzer";
@@ -41,6 +38,7 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
   const analyzerRef = useRef(new AttentionAnalyzer());
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   const activeSectionRef = useRef<string | null>(null);
+  const autoFocusAppliedRef = useRef(false);
 
   const [step, setStep] = useState<LessonStep>("calibration");
   const [hints, setHints] = useState<AdaptiveHint[]>([]);
@@ -70,9 +68,21 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
     initializeLesson(lesson.id);
     analyzerRef.current.reset();
     activeSectionRef.current = null;
+    autoFocusAppliedRef.current = false;
     setHints([]);
     setStep("calibration");
   }, [initializeLesson, lesson.id]);
+
+  useEffect(() => {
+    if (
+      step === "reader" &&
+      snapshot.focusModeSuggested &&
+      !autoFocusAppliedRef.current
+    ) {
+      autoFocusAppliedRef.current = true;
+      setFocusMode(true);
+    }
+  }, [setFocusMode, snapshot.focusModeSuggested, step]);
 
   const appendHint = useCallback(
     (event: AttentionEvent) => {
@@ -313,15 +323,19 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
   );
 
   async function handleEnableTracking() {
-    const started = await startTracking();
-    if (started) {
+    const trackingStatus = await startTracking();
+    if (trackingStatus === "tracking") {
       setCameraStatus("granted");
-    } else if (status === "unsupported") {
+      return true;
+    }
+
+    if (trackingStatus === "unsupported") {
       setCameraStatus("unsupported");
     } else {
       setCameraStatus("denied");
     }
-    return started;
+
+    return false;
   }
 
   function handleStartWithTracking() {
@@ -378,9 +392,8 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
       onFocusModeChange={setFocusMode}
       onFinishLesson={handleFinishReading}
       registerSectionRef={registerSectionRef}
-      sidebarContent={
-        <AdaptiveHintStack hints={hints} onDismiss={handleDismissHint} />
-      }
+      hints={hints}
+      onDismissHint={handleDismissHint}
     />
   );
 }

@@ -6,6 +6,7 @@ import { Lightbulb, Sparkles, TriangleAlert, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export interface AdaptiveHint {
   id: string;
@@ -21,13 +22,21 @@ export interface AdaptiveHint {
 interface AdaptiveHintStackProps {
   hints: AdaptiveHint[];
   onDismiss: (hintId: string) => void;
+  showEmptyState?: boolean;
+  className?: string;
 }
 
 export function AdaptiveHintStack({
   hints,
-  onDismiss
+  onDismiss,
+  showEmptyState = true,
+  className
 }: AdaptiveHintStackProps) {
   if (hints.length === 0) {
+    if (!showEmptyState) {
+      return null;
+    }
+
     return (
       <Card>
         <CardTitle className="text-base">Adaptive support</CardTitle>
@@ -40,7 +49,7 @@ export function AdaptiveHintStack({
   }
 
   return (
-    <div className="space-y-3">
+    <div className={cn("space-y-3", className)}>
       {hints.map((hint) => (
         <Card key={hint.id} className="space-y-3">
           <div className="flex items-start justify-between gap-3">

@@ -1,14 +1,17 @@
 "use client";
 
-import type { ReactNode } from "react";
 import Link from "next/link";
-import { BookOpenText, Focus, Gauge, ListChecks } from "lucide-react";
+import { BookOpenText, Gauge, ListChecks } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
+import {
+  AdaptiveHintStack,
+  type AdaptiveHint
+} from "@/features/lesson/adaptive-hint-stack";
 import type { Lesson } from "@/types/lesson";
 import type { SectionAnalytics } from "@/types/session";
 
@@ -22,7 +25,8 @@ interface LessonReaderProps {
   registerSectionRef: (
     sectionId: string
   ) => (element: HTMLElement | null) => void;
-  sidebarContent: ReactNode;
+  hints: AdaptiveHint[];
+  onDismissHint: (hintId: string) => void;
 }
 
 function computeReadingProgress(
@@ -49,9 +53,11 @@ export function LessonReader({
   onFocusModeChange,
   onFinishLesson,
   registerSectionRef,
-  sidebarContent
+  hints,
+  onDismissHint
 }: LessonReaderProps) {
   const progress = computeReadingProgress(lesson, sectionStats);
+  const shouldDimPeripheral = focusModeEnabled && activeSectionId !== null;
 
   return (
     <div className="space-y-6 py-6 sm:py-8" data-testid="lesson-reader">
@@ -69,7 +75,11 @@ export function LessonReader({
 
       <div className="mx-auto grid w-full max-w-6xl gap-6 px-4 sm:px-6 lg:grid-cols-[1fr_320px] lg:px-8">
         <div className={`space-y-5 ${focusModeEnabled ? "lg:pr-16" : ""}`}>
-          <Card className="space-y-4">
+          <Card
+            className={`space-y-4 transition-all duration-300 ${
+              shouldDimPeripheral ? "opacity-35 saturate-50" : ""
+            }`}
+          >
             <Badge>Lesson</Badge>
             <h1 className="text-4xl font-bold tracking-tight">
               {lesson.title}
@@ -93,16 +103,22 @@ export function LessonReader({
           >
             {lesson.sections.map((section, index) => {
               const isActive = activeSectionId === section.id;
+              const shouldShadeSection =
+                shouldDimPeripheral && !isActive && activeSectionId !== null;
+              const activeSectionHints = hints.filter(
+                (hint) => !hint.sectionId || hint.sectionId === section.id
+              );
+
               return (
                 <section
                   key={section.id}
                   id={section.id}
                   ref={registerSectionRef(section.id)}
-                  className={`rounded-3xl border p-6 transition-colors sm:p-7 ${
+                  className={`rounded-3xl border p-6 transition-all duration-300 sm:p-7 ${
                     isActive
                       ? "bg-primary/8 border-primary/60 shadow-soft"
-                      : focusModeEnabled
-                        ? "border-border/70 bg-card/85"
+                      : shouldShadeSection
+                        ? "border-border/40 bg-card/60 opacity-25 blur-[1px] saturate-50"
                         : "border-border/70 bg-card/80"
                   }`}
                   aria-current={isActive ? "true" : undefined}
@@ -150,12 +166,25 @@ export function LessonReader({
                       {section.difficultyHint}
                     </p>
                   </div>
+
+                  {isActive ? (
+                    <AdaptiveHintStack
+                      hints={activeSectionHints}
+                      onDismiss={onDismissHint}
+                      showEmptyState={false}
+                      className="mt-5"
+                    />
+                  ) : null}
                 </section>
               );
             })}
           </article>
 
-          <Card className="space-y-3">
+          <Card
+            className={`space-y-3 transition-all duration-300 ${
+              shouldDimPeripheral ? "opacity-35 saturate-50" : ""
+            }`}
+          >
             <CardTitle>Ready for your personalized quiz?</CardTitle>
             <CardDescription>
               The quiz targets skipped key sections and topics where attention
@@ -172,13 +201,18 @@ export function LessonReader({
           </Card>
         </div>
 
-        <aside className={`space-y-4 ${focusModeEnabled ? "opacity-50" : ""}`}>
+        <aside
+          className={`space-y-4 transition-all duration-300 ${
+            shouldDimPeripheral ? "opacity-20 blur-[1px] saturate-50" : ""
+          }`}
+        >
           <Card className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div className="space-y-1">
                 <CardTitle className="text-base">Focus mode</CardTitle>
                 <CardDescription>
-                  Reduce peripheral noise and prioritize readability.
+                  Automatic mode dims everything except your active reading
+                  section.
                 </CardDescription>
               </div>
               <Switch
@@ -218,8 +252,6 @@ export function LessonReader({
               })}
             </ul>
           </Card>
-
-          {sidebarContent}
         </aside>
       </div>
     </div>

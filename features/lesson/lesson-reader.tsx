@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpenText, Gauge, ListChecks } from "lucide-react";
+import { BookOpenText, ChevronDown, ChevronUp, Gauge, ListChecks } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,31 @@ import {
   AdaptiveHintStack,
   type AdaptiveHint
 } from "@/features/lesson/adaptive-hint-stack";
+import type { DwelledWordInfo } from "@/features/lesson/use-word-dwell";
+import { WordPopup } from "@/features/lesson/word-popup";
 import type { Lesson } from "@/types/lesson";
 import type { SectionAnalytics } from "@/types/session";
+
+// Minimum word length to receive a gaze-word attribute (skip tiny common words)
+const MIN_GAZE_WORD_LENGTH = 4;
+
+function WordText({ text }: { text: string }) {
+  const parts = text.split(/(\s+)/);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (/^\s+$/.test(part)) return part;
+        const clean = part.replace(/[^a-zA-Z'-]/g, "");
+        const hasAttr = clean.length >= MIN_GAZE_WORD_LENGTH;
+        return (
+          <span key={i} data-gaze-word={hasAttr ? clean : undefined}>
+            {part}
+          </span>
+        );
+      })}
+    </>
+  );
+}
 
 interface LessonReaderProps {
   lesson: Lesson;
@@ -27,6 +50,9 @@ interface LessonReaderProps {
   ) => (element: HTMLElement | null) => void;
   hints: AdaptiveHint[];
   onDismissHint: (hintId: string) => void;
+  gazeScrollZone?: "up" | "down" | null;
+  dwelledWord?: DwelledWordInfo | null;
+  onDismissWordPopup?: () => void;
 }
 
 function computeReadingProgress(
@@ -54,13 +80,44 @@ export function LessonReader({
   onFinishLesson,
   registerSectionRef,
   hints,
-  onDismissHint
+  onDismissHint,
+  gazeScrollZone,
+  dwelledWord,
+  onDismissWordPopup
 }: LessonReaderProps) {
   const progress = computeReadingProgress(lesson, sectionStats);
   const shouldDimPeripheral = focusModeEnabled && activeSectionId !== null;
 
   return (
     <div className="space-y-6 py-6 sm:py-8" data-testid="lesson-reader">
+      {/* Gaze scroll zone indicators */}
+      {gazeScrollZone === "up" && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-center bg-gradient-to-b from-primary/20 to-transparent py-3 animate-in fade-in duration-200"
+        >
+          <span className="flex items-center gap-1.5 rounded-full bg-primary/90 px-3 py-1 text-xs font-semibold text-primary-foreground shadow">
+            <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
+            Scrolling up
+          </span>
+        </div>
+      )}
+      {gazeScrollZone === "down" && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex items-center justify-center bg-gradient-to-t from-primary/20 to-transparent py-3 animate-in fade-in duration-200"
+        >
+          <span className="flex items-center gap-1.5 rounded-full bg-primary/90 px-3 py-1 text-xs font-semibold text-primary-foreground shadow">
+            <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+            Scrolling down
+          </span>
+        </div>
+      )}
+
+      {/* Word dwell popup */}
+      {dwelledWord && onDismissWordPopup && (
+        <WordPopup info={dwelledWord} onDismiss={onDismissWordPopup} />
+      )}
       <div className="sticky top-16 z-40 border-y border-border/70 bg-background/90 py-3 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center gap-4 px-4 sm:px-6 lg:px-8">
           <p className="hidden text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground sm:block">
@@ -143,7 +200,9 @@ export function LessonReader({
 
                   <div className="space-y-4 text-foreground/95">
                     {section.paragraphs.map((paragraph) => (
-                      <p key={paragraph}>{paragraph}</p>
+                      <p key={paragraph}>
+                        <WordText text={paragraph} />
+                      </p>
                     ))}
                   </div>
 

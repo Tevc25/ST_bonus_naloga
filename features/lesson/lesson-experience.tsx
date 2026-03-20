@@ -7,7 +7,9 @@ import type { AdaptiveHint } from "@/features/lesson/adaptive-hint-stack";
 import { CalibrationFlow } from "@/features/lesson/calibration-flow";
 import { LessonReader } from "@/features/lesson/lesson-reader";
 import { AttentionAnalyzer } from "@/features/gaze/attention-analyzer";
+import { useGazeScroll } from "@/features/gaze/use-gaze-scroll";
 import { useGazeTracking } from "@/features/gaze/use-gaze-tracking";
+import { useWordDwell } from "@/features/lesson/use-word-dwell";
 import { PersonalizedQuiz } from "@/features/quiz/personalized-quiz";
 import { useGazeSessionStore } from "@/features/session/gaze-session-store";
 import type { AttentionEvent, GazePoint, SectionLayout } from "@/types/gaze";
@@ -42,6 +44,17 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
 
   const [step, setStep] = useState<LessonStep>("calibration");
   const [hints, setHints] = useState<AdaptiveHint[]>([]);
+
+  const {
+    processGazePoint: processWordDwell,
+    dwelledWord,
+    dismissPopup: dismissWordPopup
+  } = useWordDwell();
+
+  const { processGazePoint: processGazeScroll, scrollZone } = useGazeScroll({
+    enabled: step === "reader",
+    paused: dwelledWord !== null
+  });
 
   const {
     mode,
@@ -162,9 +175,20 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
     ]
   );
 
+  const handleGazePoint = useCallback(
+    (point: GazePoint) => {
+      handleAnalyzerOutput(point);
+      if (step === "reader") {
+        processGazeScroll(point);
+        processWordDwell(point);
+      }
+    },
+    [handleAnalyzerOutput, processGazeScroll, processWordDwell, step]
+  );
+
   const { status, errorMessage, startTracking, stopTracking } = useGazeTracking(
     {
-      onPoint: handleAnalyzerOutput
+      onPoint: handleGazePoint
     }
   );
 
@@ -394,6 +418,9 @@ export function LessonExperience({ lesson }: LessonExperienceProps) {
       registerSectionRef={registerSectionRef}
       hints={hints}
       onDismissHint={handleDismissHint}
+      gazeScrollZone={scrollZone}
+      dwelledWord={dwelledWord}
+      onDismissWordPopup={dismissWordPopup}
     />
   );
 }

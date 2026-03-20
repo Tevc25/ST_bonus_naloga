@@ -1,0 +1,253 @@
+{
+  "id": "intro-web-security",
+  "title": "Introduction to Web Security",
+  "subtitle": "Learn the habits that prevent the most common account and data breaches.",
+  "estimatedMinutes": 12,
+  "sections": [
+    {
+      "id": "phishing",
+      "heading": "What Phishing Is",
+      "paragraphs": [
+        "Phishing is a social attack where someone pretends to be trusted so you reveal passwords, codes, or payment details. The attacker relies on urgency and familiarity rather than technical exploitation.",
+        "Modern phishing often imitates login pages with convincing branding and domain names that differ by a single character. Always verify the sender, the URL, and whether the request makes sense for your role."
+      ],
+      "keyConcepts": ["Impersonation", "Urgency cues", "URL verification"],
+      "difficultyHint": "If a message demands immediate action, pause before clicking.",
+      "simplifiedExplanation": "Phishing is a fake message that tries to rush you into sharing sensitive information.",
+      "shortExample": "An email says your cloud account is locked and asks you to sign in through a link like g00gle-security.com.",
+      "whyItMatters": "A single phishing click can expose personal data or open access to an organization.",
+      "importance": "critical",
+      "quizQuestionIds": ["q-phish-1", "q-phish-2"]
+    },
+    {
+      "id": "passwords",
+      "heading": "Strong Passwords",
+      "paragraphs": [
+        "Password strength comes from length and uniqueness. A long passphrase that is different for every account is harder to crack and reduces damage when one service is breached.",
+        "Password managers make this practical by generating and storing unique credentials. Reusing one password across services creates a chain reaction when leaks happen."
+      ],
+      "keyConcepts": [
+        "Length over complexity",
+        "Uniqueness",
+        "Password manager"
+      ],
+      "difficultyHint": "A 4-word passphrase is usually better than a short complex word.",
+      "simplifiedExplanation": "Use long, unique passwords for each account and let a password manager remember them.",
+      "shortExample": "Instead of Re@d123, use a unique phrase like maple-river-cinema-signal with a manager.",
+      "whyItMatters": "Credential stuffing attacks depend on reused passwords.",
+      "importance": "critical",
+      "quizQuestionIds": ["q-pass-1", "q-pass-2"]
+    },
+    {
+      "id": "mfa",
+      "heading": "Multi-Factor Authentication (MFA)",
+      "paragraphs": [
+        "MFA adds a second proof of identity beyond a password, such as an authenticator code, hardware key, or biometric check. This blocks many account takeovers when passwords are stolen.",
+        "Not all factors are equal. App-based authenticators and hardware keys are generally safer than SMS because phone numbers can be hijacked through SIM-swap attacks."
+      ],
+      "keyConcepts": ["Second factor", "Authenticator app", "SIM swap risk"],
+      "difficultyHint": "Think of MFA as an extra lock that still protects you if your password leaks.",
+      "simplifiedExplanation": "MFA asks for a second confirmation so stolen passwords alone are not enough.",
+      "shortExample": "You sign in with a password, then confirm with a code from your authenticator app.",
+      "whyItMatters": "MFA significantly reduces successful login abuse.",
+      "importance": "critical",
+      "quizQuestionIds": ["q-mfa-1", "q-mfa-2"]
+    },
+    {
+      "id": "social-engineering",
+      "heading": "Social Engineering Tactics",
+      "paragraphs": [
+        "Social engineering manipulates normal human behavior: trust, helpfulness, and fear. Attackers may call pretending to be IT support, ask for temporary access, or pressure you to bypass policy.",
+        "Defensive behavior is procedural. Verify identity through official channels, avoid sharing one-time codes, and normalize saying 'I will confirm this first.'"
+      ],
+      "keyConcepts": [
+        "Pretexting",
+        "Verification workflow",
+        "Boundary setting"
+      ],
+      "difficultyHint": "If someone asks for security exceptions, slow down and verify.",
+      "simplifiedExplanation": "Social engineering is psychological trickery, not a software bug.",
+      "shortExample": "A caller claims to be from IT and asks for your MFA code to 'fix sync issues.'",
+      "whyItMatters": "Even strong technical controls fail when users are manipulated into bypassing them.",
+      "importance": "supporting",
+      "quizQuestionIds": ["q-social-1", "q-social-2"]
+    },
+    {
+      "id": "public-wifi",
+      "heading": "Public Wi-Fi Risks",
+      "paragraphs": [
+        "Open public networks can expose traffic to local attackers, especially on misconfigured or unencrypted services. Malicious hotspots can mimic legitimate names to capture data.",
+        "Use HTTPS websites, disable automatic network joining, and prefer a trusted VPN when handling sensitive tasks. Treat public Wi-Fi as an untrusted environment."
+      ],
+      "keyConcepts": ["Untrusted networks", "HTTPS", "VPN"],
+      "difficultyHint": "Assume anyone nearby could monitor unsafe traffic on open networks.",
+      "simplifiedExplanation": "Public Wi-Fi is convenient but should be treated like a shared public space.",
+      "shortExample": "Avoid logging into banking apps on an airport network unless protected with trusted encryption.",
+      "whyItMatters": "Network interception can expose credentials and session data.",
+      "importance": "supporting",
+      "quizQuestionIds": ["q-wifi-1", "q-wifi-2"]
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-phish-1",
+      "sectionId": "phishing",
+      "prompt": "Which signal most strongly suggests a phishing attempt?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "The message asks for urgent login verification via a suspicious link."
+        },
+        { "id": "b", "text": "The sender uses your first name." },
+        { "id": "c", "text": "The email contains a company logo." },
+        { "id": "d", "text": "The message was sent during business hours." }
+      ],
+      "correctChoiceId": "a",
+      "explanation": "Urgent pressure plus suspicious URLs is a core phishing pattern."
+    },
+    {
+      "id": "q-phish-2",
+      "sectionId": "phishing",
+      "prompt": "Best first response to a suspicious account warning email is to:",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Click the email link and change your password immediately."
+        },
+        { "id": "b", "text": "Reply to ask if the message is legitimate." },
+        {
+          "id": "c",
+          "text": "Open the service directly from a trusted bookmark and verify alerts there."
+        },
+        { "id": "d", "text": "Forward it to colleagues for confirmation." }
+      ],
+      "correctChoiceId": "c",
+      "explanation": "Using trusted navigation avoids malicious links and confirms whether an alert is real."
+    },
+    {
+      "id": "q-pass-1",
+      "sectionId": "passwords",
+      "prompt": "What improves account security the most?",
+      "choices": [
+        { "id": "a", "text": "One complex password reused everywhere." },
+        { "id": "b", "text": "A unique long passphrase per account." },
+        { "id": "c", "text": "Changing the same password monthly." },
+        {
+          "id": "d",
+          "text": "Using personal details to make passwords memorable."
+        }
+      ],
+      "correctChoiceId": "b",
+      "explanation": "Uniqueness prevents one breach from exposing multiple accounts."
+    },
+    {
+      "id": "q-pass-2",
+      "sectionId": "passwords",
+      "prompt": "Why are password managers recommended?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "They let you keep one master password and generate unique credentials."
+        },
+        { "id": "b", "text": "They eliminate the need for MFA." },
+        { "id": "c", "text": "They guarantee protection from phishing." },
+        { "id": "d", "text": "They only store passwords in browser memory." }
+      ],
+      "correctChoiceId": "a",
+      "explanation": "Managers reduce reuse by making unique passwords practical at scale."
+    },
+    {
+      "id": "q-mfa-1",
+      "sectionId": "mfa",
+      "prompt": "What is the main purpose of MFA?",
+      "choices": [
+        { "id": "a", "text": "To speed up login by reducing password length." },
+        {
+          "id": "b",
+          "text": "To add another identity check beyond the password."
+        },
+        { "id": "c", "text": "To replace account recovery." },
+        { "id": "d", "text": "To encrypt your web browser history." }
+      ],
+      "correctChoiceId": "b",
+      "explanation": "MFA mitigates stolen-password attacks by requiring another factor."
+    },
+    {
+      "id": "q-mfa-2",
+      "sectionId": "mfa",
+      "prompt": "Why can SMS MFA be weaker than app-based MFA?",
+      "choices": [
+        { "id": "a", "text": "SMS codes expire too quickly." },
+        { "id": "b", "text": "Phone numbers can be hijacked via SIM swap." },
+        { "id": "c", "text": "SMS cannot be used internationally." },
+        { "id": "d", "text": "App-based MFA does not require internet." }
+      ],
+      "correctChoiceId": "b",
+      "explanation": "SIM swap attacks can redirect SMS codes to an attacker-controlled device."
+    },
+    {
+      "id": "q-social-1",
+      "sectionId": "social-engineering",
+      "prompt": "A caller asks for your one-time code to fix an urgent issue. Best action?",
+      "choices": [
+        {
+          "id": "a",
+          "text": "Share the code if the caller sounds legitimate."
+        },
+        {
+          "id": "b",
+          "text": "Decline and verify identity through official support channels."
+        },
+        { "id": "c", "text": "Ask for their manager and then share." },
+        { "id": "d", "text": "Share only half the code." }
+      ],
+      "correctChoiceId": "b",
+      "explanation": "Verification through known channels prevents pretexting attacks."
+    },
+    {
+      "id": "q-social-2",
+      "sectionId": "social-engineering",
+      "prompt": "Social engineering primarily exploits:",
+      "choices": [
+        { "id": "a", "text": "Cryptographic weaknesses" },
+        { "id": "b", "text": "Human behavior and trust" },
+        { "id": "c", "text": "Physical hardware damage" },
+        { "id": "d", "text": "Software licensing errors" }
+      ],
+      "correctChoiceId": "b",
+      "explanation": "The attack vector is psychological manipulation, not technical failure alone."
+    },
+    {
+      "id": "q-wifi-1",
+      "sectionId": "public-wifi",
+      "prompt": "Which habit is safest on public Wi-Fi?",
+      "choices": [
+        { "id": "a", "text": "Disable HTTPS to increase speed." },
+        { "id": "b", "text": "Join any open network with a familiar name." },
+        {
+          "id": "c",
+          "text": "Use trusted encrypted connections and avoid sensitive tasks when possible."
+        },
+        { "id": "d", "text": "Turn off firewall protections." }
+      ],
+      "correctChoiceId": "c",
+      "explanation": "Encryption and caution reduce interception risk on untrusted networks."
+    },
+    {
+      "id": "q-wifi-2",
+      "sectionId": "public-wifi",
+      "prompt": "Why is an evil twin hotspot dangerous?",
+      "choices": [
+        { "id": "a", "text": "It provides stronger internet speed." },
+        {
+          "id": "b",
+          "text": "It mimics a trusted network name to capture traffic."
+        },
+        { "id": "c", "text": "It blocks all websites except banking portals." },
+        { "id": "d", "text": "It can only affect mobile phones." }
+      ],
+      "correctChoiceId": "b",
+      "explanation": "Attackers can lure users onto fake networks to intercept data."
+    }
+  ]
+}

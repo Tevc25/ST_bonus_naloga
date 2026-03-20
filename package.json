@@ -1,0 +1,53 @@
+{
+  "name": "gazelearn",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GazeLearn - attention-aware educational web app using local eye tracking",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:all": "npm run test && npm run test:e2e"
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.2.3",
+    "clsx": "^2.1.1",
+    "framer-motion": "^12.23.0",
+    "lucide-react": "^0.525.0",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.1.5",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.0",
+    "@types/node": "^22.17.0",
+    "@types/react": "^19.1.11",
+    "@types/react-dom": "^19.1.7",
+    "autoprefixer": "^10.4.21",
+    "eslint": "^9.34.0",
+    "eslint-config-next": "^15.0.0",
+    "jsdom": "^27.0.0",
+    "postcss": "^8.5.6",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.6.14",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
